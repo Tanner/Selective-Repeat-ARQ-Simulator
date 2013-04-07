@@ -2,111 +2,111 @@
 package sr
 
 import (
-  "errors"
-  "fmt"
+	"errors"
+	"fmt"
 )
 
 type Queue struct {
-  contents []SequenceNumber
+	contents []SequenceNumber
 
-  windowSize int
+	windowSize int
 
-  baseIndex int
-  nextSequenceNumberIndex int
+	baseIndex               int
+	nextSequenceNumberIndex int
 }
 
 type SequenceNumber struct {
-  SequenceNumber int
-  // Whether or not this sequence number has been sent in a packet
-  Sent bool
-  // Whether or not this sequence number has been sent and acknowledged
-  Acknowledged bool
+	SequenceNumber int
+	// Whether or not this sequence number has been sent in a packet
+	Sent bool
+	// Whether or not this sequence number has been sent and acknowledged
+	Acknowledged bool
 }
 
 // NewQueue returns a Queue with the given window size at position zero
 func NewQueue(windowSize int) *Queue {
-  queue := new(Queue)
+	queue := new(Queue)
 
-  queue.contents = make([]SequenceNumber, windowSize)
-  queue.windowSize = windowSize
-  queue.baseIndex = 0
-  queue.nextSequenceNumberIndex = 0
+	queue.contents = make([]SequenceNumber, windowSize)
+	queue.windowSize = windowSize
+	queue.baseIndex = 0
+	queue.nextSequenceNumberIndex = 0
 
-  for i := range queue.contents {
-    queue.contents[i].SequenceNumber = i % (2 * windowSize)
-  }
+	for i := range queue.contents {
+		queue.contents[i].SequenceNumber = i % (2 * windowSize)
+	}
 
-  return queue
+	return queue
 }
 
 // OldestUnacknowledgedSequenceNumber returns the oldest unacknowledged sequence number
 func (q *Queue) OldestUnacknowledgedSequenceNumber() (*SequenceNumber, error) {
-  sequenceNumber := &q.contents[q.baseIndex]
+	sequenceNumber := &q.contents[q.baseIndex]
 
-  if !sequenceNumber.Sent {
-    return nil, errors.New("Oldest sequence number has not been sent.")
-  }
+	if !sequenceNumber.Sent {
+		return nil, errors.New("Oldest sequence number has not been sent.")
+	}
 
-  return sequenceNumber, nil
+	return sequenceNumber, nil
 }
 
 // Send returns the next available sequence number and marks it as sent
 func (q *Queue) Send() (int, error) {
-  if q.nextSequenceNumberIndex - q.baseIndex == q.windowSize {
-    return 0, errors.New("Window is full.")
-  }
+	if q.nextSequenceNumberIndex-q.baseIndex == q.windowSize {
+		return 0, errors.New("Window is full.")
+	}
 
-  var sequenceNumber *SequenceNumber
+	var sequenceNumber *SequenceNumber
 
-  sequenceNumber = &q.contents[q.nextSequenceNumberIndex]
+	sequenceNumber = &q.contents[q.nextSequenceNumberIndex]
 
-  sequenceNumber.Sent = true
+	sequenceNumber.Sent = true
 
-  q.nextSequenceNumberIndex++
+	q.nextSequenceNumberIndex++
 
-  if q.nextSequenceNumberIndex >= cap(q.contents) {
-    // Next Sequence Number Index is off the slice
-    // Resize the slice
-    
-    lastSequenceNumber := sequenceNumber.SequenceNumber
-    numberToAdd := cap(q.contents)
+	if q.nextSequenceNumberIndex >= cap(q.contents) {
+		// Next Sequence Number Index is off the slice
+		// Resize the slice
 
-    for i := 0; i < numberToAdd; i++ {
-      number := (lastSequenceNumber + i) % (2 * q.windowSize)
+		lastSequenceNumber := sequenceNumber.SequenceNumber
+		numberToAdd := cap(q.contents)
 
-      newSequenceNumber := SequenceNumber{number, false, false}
+		for i := 0; i < numberToAdd; i++ {
+			number := (lastSequenceNumber + i) % (2 * q.windowSize)
 
-      q.contents = append(q.contents, newSequenceNumber)
-    }
-  }
+			newSequenceNumber := SequenceNumber{number, false, false}
 
-  return sequenceNumber.SequenceNumber, nil
+			q.contents = append(q.contents, newSequenceNumber)
+		}
+	}
+
+	return sequenceNumber.SequenceNumber, nil
 }
 
 // MarkAckowledged marks the given sequence number as acknowledged if it is in the window
 func (q *Queue) MarkAcknowledged(sequenceNumber int) error {
-  if q.nextSequenceNumberIndex - q.baseIndex <= 0 {
-    return errors.New("Window is empty")
-  }
+	if q.nextSequenceNumberIndex-q.baseIndex <= 0 {
+		return errors.New("Window is empty")
+	}
 
-  for i := q.baseIndex; i < q.nextSequenceNumberIndex; i++ {
-    if q.contents[i].SequenceNumber == sequenceNumber {
-      q.contents[i].Acknowledged = true
+	for i := q.baseIndex; i < q.nextSequenceNumberIndex; i++ {
+		if q.contents[i].SequenceNumber == sequenceNumber {
+			q.contents[i].Acknowledged = true
 
-      if i == q.baseIndex {
-        q.slideWindow()
-      }
+			if i == q.baseIndex {
+				q.slideWindow()
+			}
 
-      return nil
-    }
-  }
+			return nil
+		}
+	}
 
-  return fmt.Errorf("Sequence number %d not found in window.", sequenceNumber)
+	return fmt.Errorf("Sequence number %d not found in window.", sequenceNumber)
 }
 
 // slideWindow slides the window until the first unacknowledged sequence number
 func (q *Queue) slideWindow() {
-  for q.contents[q.baseIndex].Acknowledged == true {
-    q.baseIndex++
-  }
+	for q.contents[q.baseIndex].Acknowledged == true {
+		q.baseIndex++
+	}
 }
