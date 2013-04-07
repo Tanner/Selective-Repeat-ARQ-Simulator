@@ -16,7 +16,9 @@ type Queue struct {
 
 type SequenceNumber struct {
   SequenceNumber int
+  // Whether or not this sequence number has been sent in a packet
   Sent bool
+  // Whether or not this sequence number has been sent and acknowledged
   Acknowledged bool
 }
 
