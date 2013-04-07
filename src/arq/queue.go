@@ -37,8 +37,14 @@ func NewQueue(windowSize int) *Queue {
 }
 
 // OldestUnacknowledgedSequenceNumber returns the oldest unacknowledged sequence number
-func (q *Queue) OldestUnacknowledgedSequenceNumber() SequenceNumber {
-  return q.contents[q.baseIndex]
+func (q *Queue) OldestUnacknowledgedSequenceNumber() (*SequenceNumber, error) {
+  sequenceNumber := &q.contents[q.baseIndex]
+
+  if !sequenceNumber.Sent {
+    return nil, errors.New("Oldest sequence number has not been sent.")
+  }
+
+  return sequenceNumber, nil
 }
 
 // Send returns the next available sequence number and marks it as sent
