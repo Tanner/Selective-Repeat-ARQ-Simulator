@@ -29,6 +29,10 @@ func NewQueue(windowSize int) *Queue {
   queue.baseIndex = 0
   queue.nextSequenceNumberIndex = 0
 
+  for i := range queue.contents {
+    queue.contents[i].SequenceNumber = i % (2 * windowSize)
+  }
+
   return queue
 }
 
