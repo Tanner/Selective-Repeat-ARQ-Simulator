@@ -27,7 +27,7 @@ func NewQueue(windowSize int) *Queue {
   queue.contents = make([]SequenceNumber, windowSize)
   queue.windowSize = windowSize
   queue.baseIndex = 0
-  queue.nextSequenceNumberIndex = 1
+  queue.nextSequenceNumberIndex = 0
 
   return queue
 }
