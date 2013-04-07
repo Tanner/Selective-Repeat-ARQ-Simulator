@@ -54,6 +54,10 @@ func (q *Queue) Send() (int, error) {
 
 // MarkAckowledged marks the given sequence number as acknowledged if it is in the window
 func (q *Queue) MarkAcknowledged(sequenceNumber int) error {
+  if q.nextSequenceNumberIndex - q.baseIndex <= 0 {
+    return errors.New("Window is empty")
+  }
+
   for i := q.baseIndex; i < q.nextSequenceNumberIndex; i++ {
     if q.contents[i].SequenceNumber == sequenceNumber {
       q.contents[i].Acknowledged = true
