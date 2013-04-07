@@ -77,11 +77,13 @@ func TestSend(t *testing.T) {
 func TestSendResize(t *testing.T) {
   queue := NewQueue(2)
 
+  previousCap := cap(queue.contents)
+
   queue.Send()
   queue.Send()
 
-  if cap(queue.contents) != 4 {
-    t.Errorf("Queue did not double in size, actual %d, expected %d", cap(queue.contents), 4)
+  if cap(queue.contents) != previousCap {
+    t.Error("Queue cap did not change before exceeding size")
   }
 
   for i := 2; i < cap(queue.contents); i++ {
