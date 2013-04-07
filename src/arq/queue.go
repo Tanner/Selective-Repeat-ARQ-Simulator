@@ -61,6 +61,22 @@ func (q *Queue) Send() (int, error) {
 
   q.nextSequenceNumberIndex++
 
+  if q.nextSequenceNumberIndex >= cap(q.contents) {
+    // Next Sequence Number Index is off the slice
+    // Resize the slice
+    
+    lastSequenceNumber := sequenceNumber.SequenceNumber
+    numberToAdd := cap(q.contents)
+
+    for i := 0; i <= numberToAdd; i++ {
+      number := (lastSequenceNumber + i) % (2 * q.windowSize)
+
+      newSequenceNumber := SequenceNumber{number, false, false}
+
+      q.contents = append(q.contents, newSequenceNumber)
+    }
+  }
+
   return sequenceNumber.SequenceNumber, nil
 }
 

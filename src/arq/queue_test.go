@@ -74,6 +74,27 @@ func TestSend(t *testing.T) {
   }
 }
 
+func TestSendResize(t *testing.T) {
+  queue := NewQueue(2)
+
+  queue.Send()
+  queue.Send()
+
+  if cap(queue.contents) == 4 {
+    t.Error("Queue did not double in size")
+  }
+
+  for i := 2; i < cap(queue.contents); i++ {
+    if queue.contents[i].Sent {
+      t.Error("Expected new sequence nubmers to not have been sent")
+    }
+
+    if queue.contents[i].Acknowledged {
+      t.Error("Expected new sequence nubmers to not have been acknowledged")
+    }
+  }
+}
+
 func TestMarkAcknowledged(t *testing.T) {
   queue := NewQueue(8)
 
