@@ -1,6 +1,9 @@
 package arq
 
-import "errors"
+import (
+  "errors"
+  "fmt"
+)
 
 type Queue struct {
   contents []SequenceNumber
@@ -49,4 +52,15 @@ func (q *Queue) Send() (int, error) {
   return sequenceNumber.SequenceNumber, nil
 }
 
-func (q *Queue) 
+// MarkAckowledged marks the given sequence number as acknowledged if it is in the window
+func (q *Queue) MarkAcknowledged(sequenceNumber int) error {
+  for i := q.baseIndex; i < q.nextSequenceNumberIndex; i++ {
+    if q.contents[i].SequenceNumber == sequenceNumber {
+      q.contents[i].Acknowledged = true
+
+      return nil
+    }
+  }
+
+  return fmt.Errorf("Sequence number %d not found in window.", sequenceNumber)
+}
