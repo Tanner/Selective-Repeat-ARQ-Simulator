@@ -1,3 +1,4 @@
+// Package arq provides structs required for ARQ protocols.
 package arq
 
 import "fmt"

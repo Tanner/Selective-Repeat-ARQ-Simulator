@@ -1,4 +1,5 @@
-package arq
+// Package sr implements a selective repeat ARQ protocol with a sliding window.
+package sr
 
 import (
   "errors"
