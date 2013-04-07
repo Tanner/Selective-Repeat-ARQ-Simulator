@@ -71,7 +71,7 @@ func (q *Queue) Send() (int, error) {
     lastSequenceNumber := sequenceNumber.SequenceNumber
     numberToAdd := cap(q.contents)
 
-    for i := 0; i <= numberToAdd; i++ {
+    for i := 0; i < numberToAdd; i++ {
       number := (lastSequenceNumber + i) % (2 * q.windowSize)
 
       newSequenceNumber := SequenceNumber{number, false, false}

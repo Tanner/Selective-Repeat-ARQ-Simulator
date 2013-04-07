@@ -80,8 +80,8 @@ func TestSendResize(t *testing.T) {
   queue.Send()
   queue.Send()
 
-  if cap(queue.contents) == 4 {
-    t.Error("Queue did not double in size")
+  if cap(queue.contents) != 4 {
+    t.Errorf("Queue did not double in size, actual %d, expected %d", cap(queue.contents), 4)
   }
 
   for i := 2; i < cap(queue.contents); i++ {
