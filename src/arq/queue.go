@@ -53,6 +53,8 @@ func (q *Queue) Send() (int, error) {
 
   sequenceNumber.Sent = true
 
+  q.nextSequenceNumberIndex++
+
   return sequenceNumber.SequenceNumber, nil
 }
 
