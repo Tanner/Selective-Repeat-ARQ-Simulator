@@ -74,9 +74,20 @@ func (q *Queue) MarkAcknowledged(sequenceNumber int) error {
     if q.contents[i].SequenceNumber == sequenceNumber {
       q.contents[i].Acknowledged = true
 
+      if i == q.baseIndex {
+        q.slideWindow()
+      }
+
       return nil
     }
   }
 
   return fmt.Errorf("Sequence number %d not found in window.", sequenceNumber)
+}
+
+// slideWindow slides the window until the first unacknowledged sequence number
+func (q *Queue) slideWindow() {
+  for q.contents[q.baseIndex].Acknowledged == true {
+    q.baseIndex++
+  }
 }

@@ -105,3 +105,18 @@ func TestMarkAcknowledged(t *testing.T) {
     t.Error("Marked a seuqnece number outside of window")
   }
 }
+
+func TestSliding(t *testing.T) {
+  queue := NewQueue(8)
+
+  sequenceNumber, _ := queue.Send()
+  queue.MarkAcknowledged(sequenceNumber)
+
+  if queue.baseIndex == 0 {
+    t.Error("Base Index did not increment")
+  }
+
+  if queue.contents[queue.baseIndex].Acknowledged {
+    t.Error("Window did not slide past acknowledged sequence number")
+  }
+}
