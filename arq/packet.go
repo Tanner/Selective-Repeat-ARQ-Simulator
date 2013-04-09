@@ -4,8 +4,10 @@ package arq
 import "fmt"
 
 type Packet struct {
-	SequenceNumber int32
+	SequenceNumber int
 	ACK            bool
+
+	ResponseChan chan Packet
 }
 
 // String returns a human-readable string of the Packet
