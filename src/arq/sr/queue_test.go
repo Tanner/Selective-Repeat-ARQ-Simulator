@@ -82,7 +82,7 @@ func TestSendResize(t *testing.T) {
 	queue.Send()
 	queue.Send()
 
-	if cap(queue.contents) != previousCap {
+	if cap(queue.contents) == previousCap {
 		t.Error("Queue cap did not change before exceeding size")
 	}
 
