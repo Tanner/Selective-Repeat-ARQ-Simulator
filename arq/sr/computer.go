@@ -1,6 +1,11 @@
 package sr
 
-import "arq"
+import (
+	"arq"
+	"time"
+)
+
+const SleepTime = 1
 
 type Computer struct {
 	queue *Queue
@@ -24,12 +29,16 @@ func (c *Computer) Send() (int, error) {
 
 	c.outputChan <- arq.Packet{sequenceNumber, false, c.inputChan}
 
+	time.Sleep(SleepTime * time.Millisecond)
+
 	return sequenceNumber, nil
 }
 
 // Receive receives from the input channel, ACK's if necessary, and returns the packet
 func (c *Computer) Receive() (arq.Packet, error) {
 	packet := <-c.inputChan
+
+	time.Sleep(SleepTime * time.Millisecond)
 
 	if packet.ACK {
 		if err := c.queue.MarkAcknowledged(packet.SequenceNumber); err != nil {
@@ -39,6 +48,8 @@ func (c *Computer) Receive() (arq.Packet, error) {
 		return packet, nil
 	} else {
 		packet.ResponseChan <- arq.Packet{0, true, c.inputChan}
+
+		time.Sleep(SleepTime * time.Millisecond)
 	}
 
 	return packet, nil
