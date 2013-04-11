@@ -14,18 +14,20 @@ func main() {
 	sender := sr.NewComputer(8, senderIn, senderOut)
 	receiver := sr.NewComputer(8, senderOut, senderIn)
 
-	go func() {
-		if sequenceNumber, err := sender.Send(); err != nil {
-			log.Println("Error - ", err)
-		} else {
-			log.Printf("Sender sent packet with sequence number %d\n", sequenceNumber)
-		}
-	}()
+	go send(sender)
 
 	go receiveHandler(sender, "Sender")
 	go receiveHandler(receiver, "Receiver")
 
 	time.Sleep(30 * time.Second)
+}
+
+func send(c *sr.Computer) {
+	if sequenceNumber, err := c.Send(); err != nil {
+		log.Println("Error - ", err)
+	} else {
+		log.Printf("Sender sent packet with sequence number %d\n", sequenceNumber)
+	}
 }
 
 func receiveHandler(c *sr.Computer, name string) {
