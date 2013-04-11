@@ -22,29 +22,20 @@ func main() {
 		}
 	}()
 
-	go func() {
-		for {
-			packet, err := receiver.Receive()
-
-			if err != nil {
-				fmt.Println("Error - ", err)
-			} else {
-				fmt.Printf("Receiver received: %v\n", packet)
-			}
-		}
-	}()
-
-	go func() {
-		for {
-			packet, err := sender.Receive()
-
-			if err != nil {
-				fmt.Println("Error - ", err)
-			} else {
-				fmt.Printf("Sender received: %v\n", packet)
-			}
-		}
-	}()
+	go receiveHandler(receiver, "Receiver")
+	go receiveHandler(sender, "Sender")
 
 	time.Sleep(30 * time.Second)
+}
+
+func receiveHandler(c *sr.Computer, name string) {
+	for {
+		packet, err := c.Receive()
+
+		if err != nil {
+			fmt.Println("Error - ", err)
+		} else {
+			fmt.Printf("%s received: %v\n", name, packet)
+		}
+	}
 }
