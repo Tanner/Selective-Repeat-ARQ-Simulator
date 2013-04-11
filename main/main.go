@@ -22,8 +22,8 @@ func main() {
 		}
 	}()
 
-	go receiveHandler(receiver, "Receiver")
 	go receiveHandler(sender, "Sender")
+	go receiveHandler(receiver, "Receiver")
 
 	time.Sleep(30 * time.Second)
 }
