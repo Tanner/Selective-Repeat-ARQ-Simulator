@@ -3,7 +3,7 @@ package main
 import (
 	"arq"
 	"arq/sr"
-	"fmt"
+	"log"
 	"time"
 )
 
@@ -16,9 +16,9 @@ func main() {
 
 	go func() {
 		if sequenceNumber, err := sender.Send(); err != nil {
-			fmt.Println("Error - ", err)
+			log.Println("Error - ", err)
 		} else {
-			fmt.Printf("Sender sent packet with sequence number %d\n", sequenceNumber)
+			log.Printf("Sender sent packet with sequence number %d\n", sequenceNumber)
 		}
 	}()
 
@@ -33,9 +33,9 @@ func receiveHandler(c *sr.Computer, name string) {
 		packet, err := c.Receive()
 
 		if err != nil {
-			fmt.Println("Error - ", err)
+			log.Println("Error - ", err)
 		} else {
-			fmt.Printf("%s received: %v\n", name, packet)
+			log.Printf("%s received: %v\n", name, packet)
 		}
 	}
 }
