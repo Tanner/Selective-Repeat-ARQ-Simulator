@@ -12,7 +12,7 @@ type Packet struct {
 
 // String returns a human-readable string of the Packet
 func (p Packet) String() string {
-	string := fmt.Sprintf("#%d", p.SequenceNumber)
+	string := fmt.Sprintf("Packet #%d", p.SequenceNumber)
 
 	if p.ACK {
 		string += " - ACK"
