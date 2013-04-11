@@ -8,7 +8,9 @@ import (
 
 type Packet struct {
 	SequenceNumber int
-	ACK            bool
+
+	ACK               bool
+	ACKSequenceNumber int
 
 	ResponseChan chan Packet
 	TimeoutTimer *time.Timer
@@ -19,7 +21,7 @@ func (p Packet) String() string {
 	string := fmt.Sprintf("Packet #%d", p.SequenceNumber)
 
 	if p.ACK {
-		string += " - ACK"
+		string += fmt.Sprintf(" - ACK for %d", p.ACKSequenceNumber)
 	}
 
 	return string

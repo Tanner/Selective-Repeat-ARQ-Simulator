@@ -38,7 +38,7 @@ func (c *Computer) sendSequenceNumber(sequenceNumber int) (int, error) {
 		c.timeout(sequenceNumber)
 	})
 
-	packet := arq.Packet{sequenceNumber, false, c.inputChan, timeoutTimer}
+	packet := arq.Packet{sequenceNumber, false, 0, c.inputChan, timeoutTimer}
 
 	c.outputChan <- packet
 
@@ -54,7 +54,7 @@ func (c *Computer) Receive() (arq.Packet, error) {
 	time.Sleep(SleepTime * time.Millisecond)
 
 	if packet.ACK {
-		if err := c.queue.MarkAcknowledged(packet.SequenceNumber); err != nil {
+		if err := c.queue.MarkAcknowledged(packet.ACKSequenceNumber); err != nil {
 			return arq.Packet{}, err
 		}
 
@@ -62,7 +62,7 @@ func (c *Computer) Receive() (arq.Packet, error) {
 
 		return packet, nil
 	} else {
-		packet.ResponseChan <- arq.Packet{0, true, c.inputChan, packet.TimeoutTimer}
+		packet.ResponseChan <- arq.Packet{0, true, packet.SequenceNumber, c.inputChan, packet.TimeoutTimer}
 
 		time.Sleep(SleepTime * time.Millisecond)
 	}
