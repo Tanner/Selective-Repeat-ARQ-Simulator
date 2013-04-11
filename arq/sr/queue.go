@@ -33,7 +33,7 @@ func NewQueue(windowSize int) *Queue {
 	queue.nextSequenceNumberIndex = 0
 
 	for i := range queue.contents {
-		queue.contents[i].SequenceNumber = i % (2 * windowSize)
+		queue.contents[i].SequenceNumber = i
 	}
 
 	return queue
@@ -71,8 +71,8 @@ func (q *Queue) Send() (int, error) {
 		lastSequenceNumber := sequenceNumber.SequenceNumber
 		numberToAdd := cap(q.contents)
 
-		for i := 0; i < numberToAdd; i++ {
-			number := (lastSequenceNumber + i) % (2 * q.windowSize)
+		for i := 1; i <= numberToAdd; i++ {
+			number := (lastSequenceNumber + i)
 
 			newSequenceNumber := SequenceNumber{number, false, false}
 
