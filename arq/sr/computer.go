@@ -13,11 +13,13 @@ type Computer struct {
 
 	inputChan  chan arq.Packet
 	outputChan chan arq.Packet
+
+	waiting chan int
 }
 
 // NewComputer returns a initialized Computer struct given the windowSize and input/output channels
 func NewComputer(windowSize int, inputChan, outputChan chan arq.Packet) *Computer {
-	return &Computer{NewQueue(windowSize), inputChan, outputChan}
+	return &Computer{NewQueue(windowSize), inputChan, outputChan, make(chan int, windowSize)}
 }
 
 // Send returns the sequence number and error of the sent packet.
@@ -26,7 +28,9 @@ func (c *Computer) Send() (int, error) {
 	sequenceNumber, err := c.queue.Send()
 
 	if err != nil {
-		return 0, err
+		<-c.waiting
+
+		return c.Send()
 	}
 
 	return c.sendSequenceNumber(sequenceNumber)
@@ -57,6 +61,8 @@ func (c *Computer) Receive() (arq.Packet, error) {
 		if err := c.queue.MarkAcknowledged(packet.ACKSequenceNumber); err != nil {
 			return arq.Packet{}, err
 		}
+
+		c.waiting <- 1
 
 		packet.TimeoutTimer.Stop()
 
