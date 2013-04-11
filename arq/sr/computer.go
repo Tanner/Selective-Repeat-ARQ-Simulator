@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+const TimeoutTime = 5
 const SleepTime = 1
 
 type Computer struct {
@@ -19,7 +20,8 @@ func NewComputer(windowSize int, inputChan, outputChan chan arq.Packet) *Compute
 	return &Computer{NewQueue(windowSize), inputChan, outputChan}
 }
 
-// Send returns the sequence number of the packet that was sent on the output channel using Selective Repeat protocol
+// Send returns the sequence number and error of the sent packet.
+// The sequence number is gotten from the queue
 func (c *Computer) Send() (int, error) {
 	sequenceNumber, err := c.queue.Send()
 
@@ -27,7 +29,18 @@ func (c *Computer) Send() (int, error) {
 		return 0, err
 	}
 
-	c.outputChan <- arq.Packet{sequenceNumber, false, c.inputChan}
+	return c.sendSequenceNumber(sequenceNumber)
+}
+
+// sendSequenceNumber sends a packet of the desired sequence number with a time out
+func (c *Computer) sendSequenceNumber(sequenceNumber int) (int, error) {
+	timeoutTimer := time.AfterFunc(TimeoutTime*time.Second, func() {
+		c.timeout(sequenceNumber)
+	})
+
+	packet := arq.Packet{sequenceNumber, false, c.inputChan, timeoutTimer}
+
+	c.outputChan <- packet
 
 	time.Sleep(SleepTime * time.Millisecond)
 
@@ -45,12 +58,19 @@ func (c *Computer) Receive() (arq.Packet, error) {
 			return arq.Packet{}, err
 		}
 
+		packet.TimeoutTimer.Stop()
+
 		return packet, nil
 	} else {
-		packet.ResponseChan <- arq.Packet{0, true, c.inputChan}
+		packet.ResponseChan <- arq.Packet{0, true, c.inputChan, packet.TimeoutTimer}
 
 		time.Sleep(SleepTime * time.Millisecond)
 	}
 
 	return packet, nil
+}
+
+// timeout resends a packet with the given sequence number
+func (c *Computer) timeout(sequenceNumber int) (int, error) {
+	return c.sendSequenceNumber(sequenceNumber)
 }
