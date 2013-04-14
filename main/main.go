@@ -27,8 +27,8 @@ func main() {
 	sender := sr.NewComputer(8, senderIn, senderOut)
 	receiver := sr.NewComputer(8, senderOut, senderIn)
 
-	for i := 0; i < len(packetLoss); i++ {
-		go send(sender)
+	for _, v := range packetLoss {
+		go send(sender, v.Sender, v.Acknowledgment)
 	}
 
 	go receiveHandler(sender, "Sender")
@@ -59,8 +59,8 @@ func parseArgs(packetSequence string) []PacketLoss {
 	return loss
 }
 
-func send(c *sr.Computer) {
-	if sequenceNumber, err := c.Send(); err != nil {
+func send(c *sr.Computer, senderLoss, acknowledgementLoss bool) {
+	if sequenceNumber, err := c.Send(senderLoss, acknowledgementLoss); err != nil {
 		log.Println("Error - ", err)
 	} else {
 		log.Printf("Sender sent packet with sequence number %d\n", sequenceNumber)
