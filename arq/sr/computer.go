@@ -16,13 +16,15 @@ type Computer struct {
 
 	waiting chan int
 
-	timeoutDuration  time.Duration
+	roundTripDuration time.Duration
+	timeoutDuration   time.Duration
+
 	timeoutTriggered func(int)
 }
 
 // NewComputer returns a initialized Computer struct given the windowSize and input/output channels
-func NewComputer(windowSize int, inputChan, outputChan chan arq.Packet, timeoutDuration time.Duration, timeout func(int)) *Computer {
-	return &Computer{NewQueue(windowSize), inputChan, outputChan, make(chan int, windowSize), timeoutDuration, timeout}
+func NewComputer(windowSize int, inputChan, outputChan chan arq.Packet, roundTripDuration, timeoutDuration time.Duration, timeout func(int)) *Computer {
+	return &Computer{NewQueue(windowSize), inputChan, outputChan, make(chan int, windowSize), roundTripDuration, timeoutDuration, timeout}
 }
 
 // Send returns the sequence number and error of the sent packet.
@@ -58,7 +60,7 @@ func (c *Computer) sendSequenceNumber(sequenceNumber int, senderLose, acknowledg
 	// Don't actually send the packet if we're supposed to "lose" it
 	if !senderLose {
 		go func() {
-			time.Sleep(RoundTripTime / 2 * time.Millisecond)
+			time.Sleep(c.roundTripDuration)
 
 			c.outputChan <- packet
 		}()
@@ -83,7 +85,7 @@ func (c *Computer) Receive() (arq.Packet, error) {
 		return packet, nil
 	} else if !packet.AcknowledgementLoss {
 		go func() {
-			time.Sleep(RoundTripTime / 2 * time.Millisecond)
+			time.Sleep(c.roundTripDuration)
 
 			packet.ResponseChan <- arq.Packet{0, true, packet.SequenceNumber, false, c.inputChan, packet.TimeoutTimer}
 		}()
