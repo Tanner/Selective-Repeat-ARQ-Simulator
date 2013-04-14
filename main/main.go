@@ -5,7 +5,6 @@ import (
 	"arq/sr"
 	"flag"
 	"log"
-	"time"
 )
 
 type PacketLoss struct {
@@ -24,6 +23,8 @@ func main() {
 	senderOut := make(chan arq.Packet)
 	senderIn := make(chan arq.Packet)
 
+	receivedACK := make(chan int)
+
 	sender := sr.NewComputer(8, senderIn, senderOut, senderTimeoutTriggered)
 	receiver := sr.NewComputer(8, senderOut, senderIn, nil)
 
@@ -31,10 +32,12 @@ func main() {
 		go send(sender, v.Sender, v.Acknowledgment)
 	}
 
-	go receiveHandler(sender, "Sender")
-	go receiveHandler(receiver, "Receiver")
+	go receiveHandler(sender, "Sender", receivedACK)
+	go receiveHandler(receiver, "Receiver", nil)
 
-	time.Sleep(30 * time.Second)
+	for _ = range packetLoss {
+		<-receivedACK
+	}
 }
 
 func parseArgs(packetSequence string) []PacketLoss {
@@ -67,9 +70,13 @@ func send(c *sr.Computer, senderLoss, acknowledgementLoss bool) {
 	}
 }
 
-func receiveHandler(c *sr.Computer, name string) {
+func receiveHandler(c *sr.Computer, name string, receivedACK chan int) {
 	for {
 		packet, err := c.Receive()
+
+		if packet.ACK {
+			receivedACK <- 1
+		}
 
 		if err != nil {
 			log.Println("Error - ", err)
