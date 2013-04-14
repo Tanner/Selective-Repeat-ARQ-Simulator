@@ -33,14 +33,14 @@ func main() {
 	sender := sr.NewComputer(8, senderIn, senderOut, *roundTripDuration, *timeoutDuration, senderTimeoutTriggered)
 	receiver := sr.NewComputer(8, senderOut, senderIn, *roundTripDuration, *timeoutDuration, nil)
 
+	go receiveHandler(sender, "Sender", receivedACK)
+	go receiveHandler(receiver, "Receiver", nil)
+
 	for _, v := range packetLoss {
 		go send(sender, v.Sender, v.Acknowledgment)
 
 		time.Sleep(*timeBetweenPackets)
 	}
-
-	go receiveHandler(sender, "Sender", receivedACK)
-	go receiveHandler(receiver, "Receiver", nil)
 
 	for _ = range packetLoss {
 		<-receivedACK
