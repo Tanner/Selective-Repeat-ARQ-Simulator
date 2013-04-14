@@ -5,9 +5,6 @@ import (
 	"time"
 )
 
-// Round Trip Time (i.e. time for packet to be sent from sender to receiver plus acknowledgement time back) in milliseconds
-const RoundTripTime = 200
-
 type Computer struct {
 	queue *Queue
 
