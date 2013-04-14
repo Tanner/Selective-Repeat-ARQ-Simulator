@@ -8,6 +8,8 @@ import (
 )
 
 func main() {
+	log.SetFlags(log.Lmicroseconds)
+
 	senderOut := make(chan arq.Packet)
 	senderIn := make(chan arq.Packet)
 
