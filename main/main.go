@@ -24,7 +24,7 @@ func main() {
 
 	flag.Parse()
 
-	packetLoss := parseArgs(*packetSequence)
+	packetLoss := parsePacketSequence(*packetSequence)
 
 	senderOut := make(chan arq.Packet)
 	senderIn := make(chan arq.Packet)
@@ -48,7 +48,8 @@ func main() {
 	}
 }
 
-func parseArgs(packetSequence string) []PacketLoss {
+// parsePacketSequence returns an array of PacketLoss for each char in the packet sequence
+func parsePacketSequence(packetSequence string) []PacketLoss {
 	loss := make([]PacketLoss, len(packetSequence))
 
 	for i, v := range packetSequence {
