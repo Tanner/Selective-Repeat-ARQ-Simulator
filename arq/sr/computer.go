@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Time in seconds to wait to resend a packet after not receiving an acknowledgement from the receiver
 const TimeoutTime = 5
 
 // Round Trip Time (i.e. time for packet to be sent from sender to receiver plus acknowledgement time back) in milliseconds
