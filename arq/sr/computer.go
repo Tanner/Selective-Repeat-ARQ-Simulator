@@ -26,32 +26,37 @@ func NewComputer(windowSize int, inputChan, outputChan chan arq.Packet) *Compute
 }
 
 // Send returns the sequence number and error of the sent packet.
+// Lose specifies whether or not that packet should be "lost" upon sending
 // The sequence number is gotten from the queue
-func (c *Computer) Send() (int, error) {
+func (c *Computer) Send(lose bool) (int, error) {
 	sequenceNumber, err := c.queue.Send()
 
 	if err != nil {
 		<-c.waiting
 
-		return c.Send()
+		return c.Send(lose)
 	}
 
-	return c.sendSequenceNumber(sequenceNumber)
+	return c.sendSequenceNumber(sequenceNumber, lose)
 }
 
 // sendSequenceNumber sends a packet of the desired sequence number with a time out
-func (c *Computer) sendSequenceNumber(sequenceNumber int) (int, error) {
+// Lose specifies whether or not that packet should be "lost" upon sending
+func (c *Computer) sendSequenceNumber(sequenceNumber int, lose bool) (int, error) {
 	timeoutTimer := time.AfterFunc(TimeoutTime*time.Second, func() {
 		c.timeout(sequenceNumber)
 	})
 
 	packet := arq.Packet{sequenceNumber, false, 0, c.inputChan, timeoutTimer}
 
-	go func() {
-		time.Sleep(RoundTripTime / 2 * time.Millisecond)
+	// Don't actually send the packet if we're supposed to "lose" it
+	if !lose {
+		go func() {
+			time.Sleep(RoundTripTime / 2 * time.Millisecond)
 
-		c.outputChan <- packet
-	}()
+			c.outputChan <- packet
+		}()
+	}
 
 	return sequenceNumber, nil
 }
@@ -83,5 +88,5 @@ func (c *Computer) Receive() (arq.Packet, error) {
 
 // timeout resends a packet with the given sequence number
 func (c *Computer) timeout(sequenceNumber int) (int, error) {
-	return c.sendSequenceNumber(sequenceNumber)
+	return c.sendSequenceNumber(sequenceNumber, false)
 }
