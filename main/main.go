@@ -17,7 +17,7 @@ func main() {
 	log.SetFlags(log.Lmicroseconds)
 
 	packetSequence := flag.String("packet-sequence", "__S_", "The sequence of packets to send. '_' no losses, 'A' ACK loss, 'S', sender loss, 'B' both lost")
-	timeBetweenPackets := flag.Duration("packet-time", 250000000, "Amount of time waited after each packet is sent.")
+	timeBetweenPackets := flag.Duration("packet-time", 250*time.Millisecond, "Amount of time waited after each packet is sent.")
 	timeoutDuration := flag.Duration("timeout", 5*time.Second, "Amount of time to wait before resending a packet that hasn't been acknowledged.")
 
 	flag.Parse()
