@@ -6,7 +6,9 @@ import (
 )
 
 const TimeoutTime = 5
-const SleepTime = 1
+
+// Round Trip Time (i.e. time for packet to be sent from sender to receiver plus acknowledgement time back) in milliseconds
+const RoundTripTime = 200
 
 type Computer struct {
 	queue *Queue
@@ -44,9 +46,11 @@ func (c *Computer) sendSequenceNumber(sequenceNumber int) (int, error) {
 
 	packet := arq.Packet{sequenceNumber, false, 0, c.inputChan, timeoutTimer}
 
-	c.outputChan <- packet
+	go func() {
+		time.Sleep(RoundTripTime / 2 * time.Millisecond)
 
-	time.Sleep(SleepTime * time.Millisecond)
+		c.outputChan <- packet
+	}()
 
 	return sequenceNumber, nil
 }
@@ -54,8 +58,6 @@ func (c *Computer) sendSequenceNumber(sequenceNumber int) (int, error) {
 // Receive receives from the input channel, ACK's if necessary, and returns the packet
 func (c *Computer) Receive() (arq.Packet, error) {
 	packet := <-c.inputChan
-
-	time.Sleep(SleepTime * time.Millisecond)
 
 	if packet.ACK {
 		if err := c.queue.MarkAcknowledged(packet.ACKSequenceNumber); err != nil {
@@ -68,9 +70,11 @@ func (c *Computer) Receive() (arq.Packet, error) {
 
 		return packet, nil
 	} else {
-		packet.ResponseChan <- arq.Packet{0, true, packet.SequenceNumber, c.inputChan, packet.TimeoutTimer}
+		go func() {
+			time.Sleep(RoundTripTime / 2 * time.Millisecond)
 
-		time.Sleep(SleepTime * time.Millisecond)
+			packet.ResponseChan <- arq.Packet{0, true, packet.SequenceNumber, c.inputChan, packet.TimeoutTimer}
+		}()
 	}
 
 	return packet, nil
