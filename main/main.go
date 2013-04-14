@@ -27,7 +27,7 @@ func main() {
 	sender := sr.NewComputer(8, senderIn, senderOut)
 	receiver := sr.NewComputer(8, senderOut, senderIn)
 
-	for i := 0; i < 9; i++ {
+	for i := 0; i < len(packetLoss); i++ {
 		go send(sender)
 	}
 
