@@ -20,6 +20,7 @@ func main() {
 	timeBetweenPackets := flag.Duration("packet-time", 250*time.Millisecond, "Amount of time waited after each packet is sent.")
 	timeoutDuration := flag.Duration("timeout", 5*time.Second, "Amount of time to wait before resending a packet that hasn't been acknowledged.")
 	roundTripDuration := flag.Duration("rtt", 200*time.Millisecond, "Round trip time between a packet being sent and the acknowledgment returning.")
+	windowSize := flag.Int("window-size", 8, "Window size for the selective repeat protocol")
 
 	flag.Parse()
 
@@ -30,8 +31,8 @@ func main() {
 
 	receivedACK := make(chan int)
 
-	sender := sr.NewComputer(8, senderIn, senderOut, *roundTripDuration, *timeoutDuration, senderTimeoutTriggered)
-	receiver := sr.NewComputer(8, senderOut, senderIn, *roundTripDuration, *timeoutDuration, nil)
+	sender := sr.NewComputer(*windowSize, senderIn, senderOut, *roundTripDuration, *timeoutDuration, senderTimeoutTriggered)
+	receiver := sr.NewComputer(*windowSize, senderOut, senderIn, *roundTripDuration, *timeoutDuration, nil)
 
 	go receiveHandler(sender, "Sender", receivedACK)
 	go receiveHandler(receiver, "Receiver", nil)
