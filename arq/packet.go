@@ -12,6 +12,8 @@ type Packet struct {
 	ACK               bool
 	ACKSequenceNumber int
 
+	AcknowledgementLoss bool
+
 	ResponseChan chan Packet
 	TimeoutTimer *time.Timer
 }
