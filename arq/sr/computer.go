@@ -5,9 +5,6 @@ import (
 	"time"
 )
 
-// Time in seconds to wait to resend a packet after not receiving an acknowledgement from the receiver
-const TimeoutTime = 5
-
 // Round Trip Time (i.e. time for packet to be sent from sender to receiver plus acknowledgement time back) in milliseconds
 const RoundTripTime = 200
 
@@ -19,12 +16,13 @@ type Computer struct {
 
 	waiting chan int
 
+	timeoutDuration  time.Duration
 	timeoutTriggered func(int)
 }
 
 // NewComputer returns a initialized Computer struct given the windowSize and input/output channels
-func NewComputer(windowSize int, inputChan, outputChan chan arq.Packet, timeout func(int)) *Computer {
-	return &Computer{NewQueue(windowSize), inputChan, outputChan, make(chan int, windowSize), timeout}
+func NewComputer(windowSize int, inputChan, outputChan chan arq.Packet, timeoutDuration time.Duration, timeout func(int)) *Computer {
+	return &Computer{NewQueue(windowSize), inputChan, outputChan, make(chan int, windowSize), timeoutDuration, timeout}
 }
 
 // Send returns the sequence number and error of the sent packet.
@@ -45,7 +43,7 @@ func (c *Computer) Send(senderLose, acknowledgementLose bool) (int, error) {
 // sendSequenceNumber sends a packet of the desired sequence number with a time out
 // Lose specifies whether or not that packet should be "lost" upon sending/ACK
 func (c *Computer) sendSequenceNumber(sequenceNumber int, senderLose, acknowledgementLose bool) (int, error) {
-	timeoutTimer := time.AfterFunc(TimeoutTime*time.Second, func() {
+	timeoutTimer := time.AfterFunc(c.timeoutDuration, func() {
 		c.timeoutTriggered(sequenceNumber)
 
 		if !senderLose && acknowledgementLose {

@@ -18,6 +18,7 @@ func main() {
 
 	packetSequence := flag.String("packet-sequence", "__S_", "The sequence of packets to send. '_' no losses, 'A' ACK loss, 'S', sender loss, 'B' both lost")
 	timeBetweenPackets := flag.Duration("packet-time", 250000000, "Amount of time waited after each packet is sent.")
+	timeoutDuration := flag.Duration("timeout", 5*time.Second, "Amount of time to wait before resending a packet that hasn't been acknowledged.")
 
 	flag.Parse()
 
@@ -28,8 +29,8 @@ func main() {
 
 	receivedACK := make(chan int)
 
-	sender := sr.NewComputer(8, senderIn, senderOut, senderTimeoutTriggered)
-	receiver := sr.NewComputer(8, senderOut, senderIn, nil)
+	sender := sr.NewComputer(8, senderIn, senderOut, *timeoutDuration, senderTimeoutTriggered)
+	receiver := sr.NewComputer(8, senderOut, senderIn, *timeoutDuration, nil)
 
 	for _, v := range packetLoss {
 		go send(sender, v.Sender, v.Acknowledgment)
