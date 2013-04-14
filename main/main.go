@@ -5,6 +5,7 @@ import (
 	"arq/sr"
 	"flag"
 	"log"
+	"time"
 )
 
 type PacketLoss struct {
@@ -16,6 +17,8 @@ func main() {
 	log.SetFlags(log.Lmicroseconds)
 
 	packetSequence := flag.String("packet-sequence", "__S_", "The sequence of packets to send. '_' no losses, 'A' ACK loss, 'S', sender loss, 'B' both lost")
+	timeBetweenPackets := flag.Duration("packet-time", 250000000, "Amount of time waited after each packet is sent.")
+
 	flag.Parse()
 
 	packetLoss := parseArgs(*packetSequence)
@@ -30,6 +33,8 @@ func main() {
 
 	for _, v := range packetLoss {
 		go send(sender, v.Sender, v.Acknowledgment)
+
+		time.Sleep(*timeBetweenPackets)
 	}
 
 	go receiveHandler(sender, "Sender", receivedACK)
