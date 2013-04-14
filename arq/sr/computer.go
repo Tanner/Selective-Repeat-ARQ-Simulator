@@ -44,7 +44,11 @@ func (c *Computer) Send(senderLose, acknowledgementLose bool) (int, error) {
 // Lose specifies whether or not that packet should be "lost" upon sending/ACK
 func (c *Computer) sendSequenceNumber(sequenceNumber int, senderLose, acknowledgementLose bool) (int, error) {
 	timeoutTimer := time.AfterFunc(TimeoutTime*time.Second, func() {
-		c.timeout(sequenceNumber, acknowledgementLose)
+		if !senderLose && acknowledgementLose {
+			c.timeout(sequenceNumber, false)
+		} else {
+			c.timeout(sequenceNumber, acknowledgementLose)
+		}
 	})
 
 	packet := arq.Packet{sequenceNumber, false, 0, acknowledgementLose, c.inputChan, timeoutTimer}
