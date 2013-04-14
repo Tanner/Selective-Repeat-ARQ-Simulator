@@ -71,6 +71,8 @@ func parsePacketSequence(packetSequence string) []PacketLoss {
 	return loss
 }
 
+// send sends a packet from the given computer
+// Values of senderLoss and acknowledgementLoss impact whether the packet is lost at the sender level or the receiver ACK level
 func send(c *sr.Computer, senderLoss, acknowledgementLoss bool) {
 	if sequenceNumber, err := c.Send(senderLoss, acknowledgementLoss); err != nil {
 		log.Println("Error - ", err)
@@ -79,6 +81,7 @@ func send(c *sr.Computer, senderLoss, acknowledgementLoss bool) {
 	}
 }
 
+// receiveHandler receives packets on the computer and passes knowledge of any ACKS to the channel
 func receiveHandler(c *sr.Computer, name string, receivedACK chan int) {
 	for {
 		packet, err := c.Receive()
@@ -95,6 +98,7 @@ func receiveHandler(c *sr.Computer, name string, receivedACK chan int) {
 	}
 }
 
+// senderTimeoutTriggered logs when a timeout has occurred
 func senderTimeoutTriggered(sequenceNumber int) {
 	log.Printf("Sender timeout triggered for Packet #%d, resending...", sequenceNumber)
 }
