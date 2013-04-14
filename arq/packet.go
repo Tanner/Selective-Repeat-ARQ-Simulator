@@ -12,6 +12,7 @@ type Packet struct {
 	ACK               bool
 	ACKSequenceNumber int
 
+	// When this packet is being acknowledged, "lose" the ACK packet in the network
 	AcknowledgementLoss bool
 
 	ResponseChan chan Packet

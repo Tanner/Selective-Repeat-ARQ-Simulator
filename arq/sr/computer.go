@@ -45,6 +45,7 @@ func (c *Computer) Send(senderLose, acknowledgementLose bool) (int, error) {
 // sendSequenceNumber sends a packet of the desired sequence number with a time out
 // Lose specifies whether or not that packet should be "lost" upon sending/ACK
 func (c *Computer) sendSequenceNumber(sequenceNumber int, senderLose, acknowledgementLose bool) (int, error) {
+	// Set up the timeout function
 	timeoutTimer := time.AfterFunc(c.timeoutDuration, func() {
 		c.timeoutTriggered(sequenceNumber)
 
@@ -74,16 +75,19 @@ func (c *Computer) Receive() (arq.Packet, error) {
 	packet := <-c.inputChan
 
 	if packet.ACK {
+		// If this packet is an acknowledement, mark it as acknowledged in the queue
 		if err := c.queue.MarkAcknowledged(packet.ACKSequenceNumber); err != nil {
 			return arq.Packet{}, err
 		}
 
+		// Inform any waiting packets that there is a spot open
 		c.waiting <- 1
 
 		packet.TimeoutTimer.Stop()
 
 		return packet, nil
 	} else if !packet.AcknowledgementLoss {
+		// If we're not supposed to "lose" the packet, send an acknowledgement that we received it
 		go func() {
 			time.Sleep(c.roundTripDuration)
 
