@@ -18,11 +18,13 @@ type Computer struct {
 	outputChan chan arq.Packet
 
 	waiting chan int
+
+	timeoutTriggered func(int)
 }
 
 // NewComputer returns a initialized Computer struct given the windowSize and input/output channels
-func NewComputer(windowSize int, inputChan, outputChan chan arq.Packet) *Computer {
-	return &Computer{NewQueue(windowSize), inputChan, outputChan, make(chan int, windowSize)}
+func NewComputer(windowSize int, inputChan, outputChan chan arq.Packet, timeout func(int)) *Computer {
+	return &Computer{NewQueue(windowSize), inputChan, outputChan, make(chan int, windowSize), timeout}
 }
 
 // Send returns the sequence number and error of the sent packet.
@@ -44,6 +46,8 @@ func (c *Computer) Send(senderLose, acknowledgementLose bool) (int, error) {
 // Lose specifies whether or not that packet should be "lost" upon sending/ACK
 func (c *Computer) sendSequenceNumber(sequenceNumber int, senderLose, acknowledgementLose bool) (int, error) {
 	timeoutTimer := time.AfterFunc(TimeoutTime*time.Second, func() {
+		c.timeoutTriggered(sequenceNumber)
+
 		if !senderLose && acknowledgementLose {
 			c.timeout(sequenceNumber, false)
 		} else {
