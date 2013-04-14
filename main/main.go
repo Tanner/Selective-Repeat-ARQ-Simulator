@@ -16,7 +16,7 @@ type PacketLoss struct {
 func main() {
 	log.SetFlags(log.Lmicroseconds)
 
-	packetSequence := flag.String("packet-sequence", "__A_", "The sequence of packets to send. '_' no losses, 'A' ACK loss, 'S', sender loss, 'B' both lost")
+	packetSequence := flag.String("packet-sequence", "__S_", "The sequence of packets to send. '_' no losses, 'A' ACK loss, 'S', sender loss, 'B' both lost")
 	flag.Parse()
 
 	packetLoss := parseArgs(*packetSequence)
