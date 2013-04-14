@@ -14,7 +14,9 @@ func main() {
 	sender := sr.NewComputer(8, senderIn, senderOut)
 	receiver := sr.NewComputer(8, senderOut, senderIn)
 
-	go send(sender)
+	for i := 0; i < 9; i++ {
+		go send(sender)
+	}
 
 	go receiveHandler(sender, "Sender")
 	go receiveHandler(receiver, "Receiver")
