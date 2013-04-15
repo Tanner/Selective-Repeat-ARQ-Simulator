@@ -16,19 +16,10 @@ Usage of main:
 ## Examples
 
 ### Example 1
-#### Command
+Send four packets, without any losses, from a sender that has a window size of two. RTT in the network takes one second.
 ```
 $ main -packet-sequence="____" -window-size=2 -rtt=1s
-```
 
-Sends 4 packets with no packet losses.
-
-Sender has a window size of 2 packets.
-
-The round trip time is set to 1 second.
-
-#### Output
-```
 20:30:26.235480 Sender sent packet with sequence number 0
 20:30:26.486683 Sender sent packet with sequence number 1
 20:30:27.236893 Receiver received: Packet #0
