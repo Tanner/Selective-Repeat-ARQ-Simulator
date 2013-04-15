@@ -21,7 +21,7 @@ type Computer struct {
 
 // NewComputer returns a initialized Computer struct given the windowSize and input/output channels
 func NewComputer(windowSize int, inputChan, outputChan chan arq.Packet, roundTripDuration, timeoutDuration time.Duration, timeout func(int)) *Computer {
-	return &Computer{NewQueue(windowSize), inputChan, outputChan, make(chan int, windowSize), roundTripDuration, timeoutDuration, timeout}
+	return &Computer{NewQueue(windowSize), inputChan, outputChan, make(chan int, 1), roundTripDuration, timeoutDuration, timeout}
 }
 
 // Send returns the sequence number and error of the sent packet.
@@ -78,7 +78,10 @@ func (c *Computer) Receive() (arq.Packet, error) {
 		}
 
 		// Inform any waiting packets that there is a spot open
-		c.waiting <- 1
+		select {
+		case c.waiting <- 1:
+		default:
+		}
 
 		packet.TimeoutTimer.Stop()
 
