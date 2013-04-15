@@ -58,7 +58,7 @@ func (c *Computer) sendSequenceNumber(sequenceNumber int, senderLose, acknowledg
 	// Don't actually send the packet if we're supposed to "lose" it
 	if !senderLose {
 		go func() {
-			time.Sleep(c.roundTripDuration)
+			time.Sleep(c.roundTripDuration / 2)
 
 			c.outputChan <- packet
 		}()
@@ -86,7 +86,7 @@ func (c *Computer) Receive() (arq.Packet, error) {
 	} else if !packet.AcknowledgementLoss {
 		// If we're not supposed to "lose" the packet, send an acknowledgement that we received it
 		go func() {
-			time.Sleep(c.roundTripDuration)
+			time.Sleep(c.roundTripDuration / 2)
 
 			packet.ResponseChan <- arq.Packet{0, true, packet.SequenceNumber, false, c.inputChan, packet.TimeoutTimer}
 		}()
