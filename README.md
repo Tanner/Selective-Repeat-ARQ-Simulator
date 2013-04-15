@@ -3,7 +3,6 @@
 A simulator of the sliding window behavior of a sender process that uses select repeat ARQ.
 
 ## Usage
-
 ```
 Usage of main:
   -packet-sequence="__S_": The sequence of packets to send. '_' no losses, 'A' ACK loss, 'S', sender loss, 'B' both lost
@@ -12,6 +11,17 @@ Usage of main:
   -timeout=5s: Amount of time to wait before resending a packet that hasn't been acknowledged.
   -window-size=8: Window size for the selective repeat protocol
 ```
+
+### Packet Sequence
+Packet sequence is a string of characters that indicate how many packets should be sent and when, if any at all, that packet or that packet's acknowledgement should be lost.
+
+`_` indicates a packet that should be sent/received with no losses
+
+`A` indicates a packet that should be successfully sent from the sender to the receiver, but the receiver's acknowledgement gets lost in the network
+
+`S` indicates a packet that will not successfully sent from the sender to the receiver
+
+`B` indicates a packet that will have both the behaviors of `A` and `B`. It will first fail to send the packet from the sender, resend, successfully arrive at the destination, the acknowledgement will get lost, and resend again with no further losses.
 
 ## Examples
 
