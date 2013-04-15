@@ -1,9 +1,14 @@
 CS 4251 - Programming Project
 -----------------------------
-You need to write a program to emulate the sliding window behavior of a sender process that uses selective repeat ARQ with a window size of 8 packets. Your program should allow users to specify the number of packets to be "sent" to a receiver process and which subset of them will be "lost in the network". 
+A simulator of the sliding window behavior of a sender process that uses select repeat ARQ.
 
-In this emulation, you have the liberty to specify the roundtrip delay and the times these packets arrive at the sender process, ready to be sent out. 
-
-You need NOT write any TCP/UDP socket programs. Instead, you may simply assume that each packet that is not "lost in the network" will magically be received and the sender process will magically get a corresponding acknowledgement from the receiver. Then, the timers associated with these lost packets will expire after a certain amount of time (say 5 seconds) and they will be "resent".
-
-Your program needs to output which packet (identified by a sequence number) will be "sent" out at what time.
+Usage
+-----
+```
+Usage of main:
+  -packet-sequence="__S_": The sequence of packets to send. '_' no losses, 'A' ACK loss, 'S', sender loss, 'B' both lost
+  -packet-time=250ms: Amount of time waited after each packet is sent.
+  -rtt=200ms: Round trip time between a packet being sent and the acknowledgment returning.
+  -timeout=5s: Amount of time to wait before resending a packet that hasn't been acknowledged.
+  -window-size=8: Window size for the selective repeat protocol
+```
