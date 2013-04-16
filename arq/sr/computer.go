@@ -104,3 +104,7 @@ func (c *Computer) Receive() (arq.Packet, error) {
 func (c *Computer) timeout(sequenceNumber int, acknowledgementLose bool) (int, error) {
 	return c.sendSequenceNumber(sequenceNumber, false, acknowledgementLose)
 }
+
+func (c *Computer) QueueString() string {
+	return c.queue.String()
+}
