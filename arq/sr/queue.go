@@ -110,3 +110,33 @@ func (q *Queue) slideWindow() {
 		q.baseIndex++
 	}
 }
+
+func (q *Queue) String() string {
+	output := ""
+
+	for i, v := range q.contents {
+		if q.baseIndex == i {
+			output += "["
+		}
+
+		if i == q.baseIndex && q.nextSequenceNumberIndex == q.baseIndex {
+			output += "]"
+		}
+
+		if v.Sent {
+			if !v.Acknowledged {
+				output += "-"
+			} else if v.Acknowledged {
+				output += "A"
+			}
+		} else {
+			output += "_"
+		}
+
+		if q.baseIndex != i+1 && q.nextSequenceNumberIndex-1 == i {
+			output += "]"
+		}
+	}
+
+	return output
+}

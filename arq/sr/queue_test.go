@@ -143,3 +143,33 @@ func TestSliding(t *testing.T) {
 		t.Error("Window did not slide past acknowledged sequence number")
 	}
 }
+
+func TestString(t *testing.T) {
+	helper := func(q *Queue, s string) {
+		if q.String() != s {
+			t.Errorf("Queue String() did not match expected value, got %s, expected %s\n", q.String(), s)
+		}
+	}
+
+	queue := NewQueue(4)
+
+	helper(queue, "[]____")
+
+	queue.Send()
+	helper(queue, "[-]___")
+
+	queue.Send()
+	helper(queue, "[--]__")
+
+	queue.Send()
+	queue.MarkAcknowledged(0)
+	queue.Send()
+	queue.Send()
+	helper(queue, "A[----]___")
+
+	queue.MarkAcknowledged(1)
+	queue.MarkAcknowledged(2)
+	queue.MarkAcknowledged(3)
+	queue.MarkAcknowledged(4)
+	helper(queue, "AAAAA[]___")
+}
