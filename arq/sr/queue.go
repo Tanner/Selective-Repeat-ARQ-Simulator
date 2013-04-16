@@ -52,7 +52,7 @@ func (q *Queue) OldestUnacknowledgedSequenceNumber() (*SequenceNumber, error) {
 
 // Send returns the next available sequence number and marks it as sent
 func (q *Queue) Send() (int, error) {
-	if q.nextSequenceNumberIndex-q.baseIndex == q.windowSize {
+	if q.Full() {
 		return 0, errors.New("Window is full.")
 	}
 
@@ -85,7 +85,7 @@ func (q *Queue) Send() (int, error) {
 
 // MarkAckowledged marks the given sequence number as acknowledged if it is in the window
 func (q *Queue) MarkAcknowledged(sequenceNumber int) error {
-	if q.nextSequenceNumberIndex-q.baseIndex <= 0 {
+	if q.Empty() {
 		return errors.New("Window is empty")
 	}
 
@@ -109,6 +109,21 @@ func (q *Queue) slideWindow() {
 	for q.contents[q.baseIndex].Acknowledged == true {
 		q.baseIndex++
 	}
+}
+
+// Full returns true if the queue is full and is waiting for packets to be acknowledged
+func (q *Queue) Full() bool {
+	return q.FreeSpace() == 0
+}
+
+// Empty returns true if the queue is empty (i.e. no packets sent)
+func (q *Queue) Empty() bool {
+	return q.FreeSpace() == q.windowSize
+}
+
+// FreeSpace returns the number of available slots in the window
+func (q *Queue) FreeSpace() int {
+	return q.windowSize - (q.nextSequenceNumberIndex - q.baseIndex)
 }
 
 func (q *Queue) String() string {
